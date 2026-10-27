@@ -103,13 +103,16 @@ const updateBookByOwner = async (req, res) => {
                 error: "User not authorized."
             })
         }
+        let putTitle = book.title
+        let putAuthor = book.author
         let putDescription = book.description
         let coverImageUrl = book.coverImage
         const {title, author, description} = req.body
-        if(!title || !author){
-            return res.status(400).json({
-                error: "Please fill required fields."
-            })
+        if(title){
+            putTitle = title
+        }
+        if(author){
+            putAuthor = author
         }
         if(description){
             putDescription = description
@@ -118,15 +121,15 @@ const updateBookByOwner = async (req, res) => {
             const result = await cloudinary.uploader.upload(req.file.path)
             coverImageUrl = result.secure_url
         }
-        book.title = title
-        book.author = author
+        book.title = putTitle
+        book.author = putAuthor
         book.description = putDescription
         book.coverImage = coverImageUrl
-        await book.save()
+        const updatedBook = await book.save()
 
         return res.status(200).json({
             message: "Book updated successfully.",
-            data: book
+            data: updatedBook
         })
     }catch(error){
         return res.status(500).json({

@@ -47,11 +47,11 @@ const createReadingList = async (req, res) => {
 
 const getAllReadingListsByOwner = async (req, res) => {
     try {
-        const readingLists = await readingListModel.find({
-            owner: req.user._id
-        }).sort({
-            createdAt: -1
-        }).populate('books')
+        const readingLists = await readingListModel
+  .find({ owner: req.user._id })
+  .sort({ createdAt: -1 })
+  .populate('books');
+
         if (readingLists.length === 0) {
             return res.status(404).json({
                 error: "No reading list found."
@@ -132,7 +132,7 @@ const updateReadingListByOwner = async (req, res) => {
                     })
                 }
                 // Use .includes() to prevent adding duplicate books to the list
-                if (!putBook.includes(book._id)) {
+                if (putBook.some(id => id.toString() !== book._id.toString())) {
                     await putBook.push(book._id)
                 } else {
                     return res.status(400).json({
@@ -219,7 +219,7 @@ const addBookToReadingListByOwner = async (req, res) => {
                     })
                 }
                 // Use .includes() to prevent adding duplicate books to the list
-                if (!readingList.books.includes(book._id)) {
+                if (readingList.books.some(id => id.toString() !== book._id.toString())) {
                     await readingList.books.push(book._id)
                 } else {
                     return res.status(400).json({
