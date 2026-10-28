@@ -48,9 +48,9 @@ const createReadingList = async (req, res) => {
 const getAllReadingListsByOwner = async (req, res) => {
     try {
         const readingLists = await readingListModel
-  .find({ owner: req.user._id })
-  .sort({ createdAt: -1 })
-  .populate('books');
+            .find({ owner: req.user._id })
+            .sort({ createdAt: -1 })
+            .populate('books');
 
         if (readingLists.length === 0) {
             return res.status(404).json({
@@ -131,7 +131,7 @@ const updateReadingListByOwner = async (req, res) => {
                         error: "User not authorized."
                     })
                 }
-                // Use .includes() to prevent adding duplicate books to the list
+                // Use .includes() or .some() to prevent adding duplicate books to the list
                 if (putBook.some(id => id.toString() !== book._id.toString())) {
                     await putBook.push(book._id)
                 } else {
@@ -198,13 +198,10 @@ const addBookToReadingListByOwner = async (req, res) => {
                 error: "User not authorized."
             })
         }
+        let putBook = readingList.books
         const { books } = req.body
-        if (!books) {
-            return res.status(400).json({
-                error: "Please fill the required fields."
-            })
-        }
-        const booksArray = Array.isArray(books) ? books : [books]
+        if (books) {
+            const booksArray = Array.isArray(books) ? books : [books]
             // Verify if the books exist in your database
             for (const id of booksArray) {
                 const book = await bookModel.findById(id)
@@ -218,15 +215,16 @@ const addBookToReadingListByOwner = async (req, res) => {
                         error: "User not authorized."
                     })
                 }
-                // Use .includes() to prevent adding duplicate books to the list
-                if (readingList.books.some(id => id.toString() !== book._id.toString())) {
-                    await readingList.books.push(book._id)
+                // Use .includes() or .some() to prevent adding duplicate books to the list
+                if (putBook.some(id => id.toString() !== book._id.toString())) {
+                    await putBook.push(book._id)
                 } else {
                     return res.status(400).json({
                         error: "Book already exists."
                     })
                 }
             }
+        }
 
         await readingList.save()
 
@@ -241,6 +239,62 @@ const addBookToReadingListByOwner = async (req, res) => {
     }
 }
 
+
+const removeBookFromReadingListByOwner = async (req, res) => {
+    try {
+        const { id, bookId } = req.params
+        const readingList = await readingListModel.findById(id)
+        if (!readingList) {
+            return res.status(404).json({
+                error: "Book not found."
+            })
+        }
+        if (req.user._id.toString() !== readingList.owner.toString()) {
+            return res.status(403).json({
+                error: "User not authorized."
+            })
+        }
+        const bookToRemove = await bookModel.findById(bookId)
+        if(!bookToRemove){
+            return res.status(404).json({
+                error: "Book not found."
+            })
+        }
+        if(req.user._id.toString() !== bookToRemove.owner.toString()){
+            return res.status(403).json({
+                error: "User not authorized."
+            })
+        }
+        const existingBook = readingList.books.some(
+            book => book.toString() === bookToRemove._id.toString()
+        )
+        if(!existingBook){
+            return res.status(400).json({
+                error: "Book does not exist in reading list."
+            })
+        }
+        readingList.books = await readingList.books.filter(
+            book => book.toString() !== bookToRemove._id.toString()
+        )
+        await readingList.save()
+
+        return res.status(200).json({
+            message: "Book removed from readingList.",
+            data: readingList
+        })
+    }catch(error){
+        return res.status(500).json({
+            error: error.message
+        })
+    }
+}
+
 module.exports = {
-    createReadingList, getAllReadingListsByOwner, getSingleReadingListByOwner, updateReadingListByOwner, deleteReadingListByOwner, addBookToReadingListByOwner
+    createReadingList,
+    getAllReadingListsByOwner,
+    getSingleReadingListByOwner,
+    updateReadingListByOwner,
+    deleteReadingListByOwner,
+    addBookToReadingListByOwner,
+    removeBookFromReadingListByOwner
 }

@@ -6,4 +6,4 @@ const authSchema = mongoose.Schema({
     password: {type: String, required: [true, "User password is required"], trim: true}
 })
 
-module.exports = mongoose.model('Auth', authSchema)
+module.exports = mongoose.model('Auth', authSchema) 

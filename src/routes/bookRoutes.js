@@ -13,4 +13,4 @@ router.get('/:id', requireAuth, getSingleBookByOwner)
 router.put('/:id', requireAuth, upload.single('coverImage'), updateBookByOwner)
 router.delete('/:id', requireAuth, deleteBookByOwner)
 
-module.exports = router
+module.exports = router 

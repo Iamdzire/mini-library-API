@@ -8,4 +8,4 @@ const bookSchema = mongoose.Schema({
     owner: {type: mongoose.Schema.Types.ObjectId, required: [true, "Book owner is required"], ref: 'Auth'}
 }, {timestamps: true})
 
-module.exports = mongoose.model('Book', bookSchema)
+module.exports = mongoose.model('Book', bookSchema) 

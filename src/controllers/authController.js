@@ -56,7 +56,7 @@ const login = async (req, res) => {
         const user = await authModel.findOne({
             email
         })
-        if(!user){
+        if(!user){ 
             console.error("User not found.")
             return res.status(401).json({
                 error: "Invalid email or password."

@@ -39,7 +39,7 @@ const createBook = async (req, res) => {
 }
 
 
-const getAllBooksByOwner = async (req, res) => {
+const getAllBooksByOwner = async (req, res) => { 
     try {
         const books = await bookModel.find({
             owner: req.user._id

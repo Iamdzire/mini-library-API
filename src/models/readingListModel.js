@@ -6,4 +6,4 @@ const readingListSchema = mongoose.Schema({
     books: [{type: mongoose.Schema.Types.ObjectId, ref: "Book"}]
 }, {timestamps: true})
 
-module.exports = mongoose.model('ReadingList', readingListSchema)
+module.exports = mongoose.model('ReadingList', readingListSchema) 

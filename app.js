@@ -7,7 +7,7 @@ const readingListRoutes = require('./src/routes/readingListRoutes')
 
 
 
-app.use(express.json())
+app.use(express.json()) 
 app.use(cors())
 
 // Health check
