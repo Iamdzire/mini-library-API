@@ -41,19 +41,50 @@ const createBook = async (req, res) => {
 
 const getAllBooksByOwner = async (req, res) => { 
     try {
-        const books = await bookModel.find({
-            owner: req.user._id
-        }).sort({
-            createdAt: -1
-        })
+        let sortOption = {createdAt: -1} // Default: Newest first
+        const {page, limit, title, author, sort} = req.query
+        const pageNumber = Number(page) || 1
+        const limitNumber = Number(limit) || 4
+        const skip = (pageNumber - 1) * limitNumber
+        const filter = {owner: req.user._id}
+
+        if(title){
+            filter.title = {$regex: title, $options: 'i'}
+        }
+        if(author){
+            filter.author = {$regex: author, $options: 'i'}
+        }
+        if(sort === 'oldest'){
+            sortOption = {createdAt: 1}
+        }
+        if(sort === 'title'){
+            sortOption = {title: 1}
+        }
+        if(sort === 'author'){
+            sortOption = {author: 1}
+        }
+        const books = await bookModel
+        .find(filter)
+        .sort(sortOption)
+        .skip(skip)
+        .limit(limitNumber)
         if(books.length === 0){
             return res.status(404).json({
                 error: "No book found."
             })
         }
+        const total = await bookModel.countDocuments(filter)
+        const totalPages = Math.ceil(total / limitNumber)
+
         return res.status(200).json({
             message: "All books fetched successfully.",
-            data: books
+            data: {
+                books,
+                page: pageNumber,
+                limit: limitNumber,
+                total,
+                totalPages
+            }
         })
     }catch(error){
         return res.status(500).json({
